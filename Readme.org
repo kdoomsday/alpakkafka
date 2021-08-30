@@ -1,0 +1,12 @@
+#+title:Alpakkafka
+
+Simple demonstration for Akka Streams and Kafa.
+* Running
+1. Start Kafka with
+   #+begin_src bash
+     docker-compose up -d
+   #+end_src
+2. Run ~SimpleProducer~ to add a few messages
+3. Consume the messages with either:
+   - ~SimpleConsumer~ :: Consume and do not commit offsets
+   - ~CommittingConsumer~ :: Commits offsets as it gets messages
