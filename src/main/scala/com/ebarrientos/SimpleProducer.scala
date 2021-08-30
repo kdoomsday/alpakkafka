@@ -10,6 +10,8 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import akka.kafka.scaladsl
 import scala.util.Random
 import Constants._
+import akka.Done
+import scala.concurrent.Future
 
 object SimpleProducer extends App {
   implicit val system = ActorSystem("KafkaSystem")
@@ -20,7 +22,7 @@ object SimpleProducer extends App {
     ProducerSettings(system, new StringSerializer, new StringSerializer)
       .withBootstrapServers(bootstrapServers)
 
-  val done =
+  val done: Future[Done] =
     Source
       .single(s"""{"a": "${Random.nextInt()}"}""")
       .map { elem =>
