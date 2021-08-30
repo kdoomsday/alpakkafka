@@ -16,8 +16,6 @@ import scala.concurrent.duration._
   * Consumes from the topic and commits offsets as it gets them
   */
 object CommittingConsumer extends App {
-  println("Hello from consumer!")
-
   implicit val system = ActorSystem("ConsumerSystem")
   implicit val ec     = system.dispatcher
 
