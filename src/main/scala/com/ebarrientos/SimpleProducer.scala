@@ -15,23 +15,28 @@ import scala.concurrent.Future
 
 object SimpleProducer extends App {
   implicit val system = ActorSystem("KafkaSystem")
-  implicit val ec = system.dispatcher
-
+  implicit val ec     = system.dispatcher
 
   val kafkaProducerSettings =
     ProducerSettings(system, new StringSerializer, new StringSerializer)
       .withBootstrapServers(bootstrapServers)
 
+  /** Producir un mensaje aleatorio */
+  private def mkMessage(): String =
+    s"""{"a": "${Random.nextInt()}"}"""
+
   val done: Future[Done] =
-    Source
-      .single(s"""{"a": "${Random.nextInt()}"}""")
+    Source(
+      (1 to Random.nextInt(10))
+        .map(_ => mkMessage())
+    )
       .map { elem =>
         new ProducerRecord[String, String](topic, elem)
       }
       .runWith(scaladsl.Producer.plainSink(kafkaProducerSettings))
 
   done
-    .map{ d =>
+    .map { d =>
       println("Finished producing")
       d
     }
