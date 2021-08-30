@@ -1,0 +1,17 @@
+target/
+project/project/
+
+.settings
+.project
+.classpath
+.sbt-hydra-history
+
+project/metals.sbt
+
+.idea
+*.iml
+
+.metals
+.bloop
+.bsp
+
