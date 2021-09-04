@@ -28,3 +28,5 @@ services:
       - database.env # configure postgres
     ports:
       - 5432:5432
+    volumes:
+      - ./dbInitScripts:/docker-entrypoint-initdb.d
