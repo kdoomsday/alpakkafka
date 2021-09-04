@@ -12,6 +12,8 @@ import scala.util.Random
 import Constants._
 import akka.Done
 import scala.concurrent.Future
+import com.fasterxml.jackson.databind.ObjectMapper
+import akka.stream.scaladsl.Sink
 
 object SimpleProducer extends App {
   implicit val system = ActorSystem("KafkaSystem")
@@ -22,16 +24,22 @@ object SimpleProducer extends App {
       .withBootstrapServers(bootstrapServers)
 
   /** Producir un mensaje aleatorio */
-  private def mkMessage(): String =
-    s"""{"a": "${Random.nextInt()}"}"""
+  private def mkMessage() = Listing.randomListing()
+
+
+  private def toJsonStr(listing: Listing): String =
+    mapper.writeValueAsString(listing)
+
 
   val done: Future[Done] =
-    Source(
+    Source (
       (1 to Random.nextInt(10))
         .map(_ => mkMessage())
     )
-      .map { elem =>
-        new ProducerRecord[String, String](topic, elem)
+      .map { listing =>
+        val listingStr = toJsonStr(listing)
+        println(listingStr)
+        new ProducerRecord[String, String](topic, listingStr)
       }
       .runWith(scaladsl.Producer.plainSink(kafkaProducerSettings))
 

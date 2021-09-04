@@ -1,23 +1,27 @@
 package com.ebarrientos
 
+import akka.Done
 import akka.actor.ActorSystem
 import akka.kafka.ConsumerSettings
-import org.apache.kafka.common.serialization.StringDeserializer
-import Constants._
-import org.apache.kafka.clients.consumer.ConsumerConfig
-import akka.kafka.scaladsl.Consumer
 import akka.kafka.Subscriptions
-import akka.stream.scaladsl.Sink
+import akka.kafka.scaladsl.Consumer
 import akka.stream.scaladsl.Keep
-import akka.Done
+import akka.stream.scaladsl.Sink
+import com.fasterxml.jackson.databind.ObjectMapper
+import org.apache.kafka.clients.consumer.ConsumerConfig
+import org.apache.kafka.common.serialization.StringDeserializer
+
 import scala.concurrent.duration._
 
-/**
-  * Consumes from the topic and commits offsets as it gets them
+import Constants._
+
+/** Consumes from the topic and commits offsets as it gets them
   */
 object CommittingConsumer extends App {
-  implicit val system = ActorSystem("ConsumerSystem")
-  implicit val ec     = system.dispatcher
+  implicit val system     = ActorSystem("ConsumerSystem")
+  implicit val ec         = system.dispatcher
+
+  private val InsertThreads = 3
 
   val kafkaConsumerSettings =
     ConsumerSettings(system, new StringDeserializer, new StringDeserializer)
@@ -32,7 +36,10 @@ object CommittingConsumer extends App {
         kafkaConsumerSettings,
         Subscriptions.topics(Constants.topic)
       )
-      .map(msg => println(s">>> ${msg.value()}"))
+      .map(msg => mapper.readValue(msg.value(), classOf[Listing]))
+      .filter(listing => listing.price >= 100000)
+      .mapAsyncUnordered(InsertThreads)(listing => PostgresDao.insertListing(listing))
+      .map(rows => println(s"Inserted $rows row(s)"))
       .toMat(Sink.ignore)(Consumer.DrainingControl.apply)
       .run()
 

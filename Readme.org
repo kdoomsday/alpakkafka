@@ -8,3 +8,13 @@ Simple demonstration for Akka Streams and Kafa.
 3. Consume the messages with either:
    - ~SimpleConsumer~ :: Consume and do not commit offsets
    - ~CommittingConsumer~ :: Commits offsets as it gets messages
+* Database
+We are using a PostgresQL database created with the following:
+#+BEGIN_SRC sql
+  CREATE TABLE public.Listing (
+    id      serial primary key,
+    "name"  varchar NOT NULL,
+    price   numeric NOT NULL,
+    address varchar NOT NULL
+  );
+#+END_SRC
