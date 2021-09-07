@@ -18,8 +18,8 @@ import Constants._
 /** Consumes from the topic and does not commit
   */
 object SimpleConsumer extends App {
-  implicit val system     = ActorSystem("ConsumerSystem")
-  implicit val ec         = system.dispatcher
+  implicit val system = ActorSystem("ConsumerSystem")
+  implicit val ec     = system.dispatcher
 
   val kafkaConsumerSettings =
     ConsumerSettings(system, new StringDeserializer, new StringDeserializer)
@@ -30,18 +30,26 @@ object SimpleConsumer extends App {
 
   val control =
     Consumer
-      .committableSource (
+      .committableSource(
         kafkaConsumerSettings,
         Subscriptions.topics(Constants.topic)
       )
       .map(msg => mapper.readValue(msg.record.value(), classOf[Listing]))
+      .map { msg =>
+        println(s"Precio: ${msg.price}, M2=${msg.m2}")
+        msg
+      }
       .filter(listing => listing.price >= 100000)
       .mapAsyncUnordered(3)(listing => PostgresDao.insertListing(listing))
+      .recover{ case ex =>
+        ex.printStackTrace()
+        0
+      }
       .map(rows => println(s"Inserted $rows row(s)"))
       .toMat(Sink.ignore)(Consumer.DrainingControl.apply)
       .run()
 
-  control.streamCompletion.onComplete{ _ =>
+  control.streamCompletion.onComplete { _ =>
     system.terminate()
     println(s"All done")
   }
