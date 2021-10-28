@@ -21,6 +21,7 @@ libraryDependencies ++= Seq(
 libraryDependencies ++= Seq(
   "com.typesafe.akka"            %% "akka-stream-kafka"    % AlpakkaVersion,
   "com.typesafe.akka"            %% "akka-stream"          % akkaVersion,
+  "com.typesafe.akka" %% "akka-http" % "10.2.6",
   "com.fasterxml.jackson.core"    % "jackson-core"         % JacksonVersion,
   "com.fasterxml.jackson.core"    % "jackson-databind"     % JacksonVersion,
   "com.fasterxml.jackson.module" %% "jackson-module-scala" % JacksonModulVersion
